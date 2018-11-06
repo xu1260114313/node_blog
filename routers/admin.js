@@ -4,13 +4,13 @@ const User = require('../models/User');
 const Category = require('../models/Category');
 const Content = require('../models/Content');
 
-// router.use((req, res, next) => {
-//     if(!req.userInfo.isAdmin) {
-//         res.send('对不起，您不是管理员');
-//         return;
-//     }
-//     next();
-// })
+router.use((req, res, next) => {
+    if(!req.userInfo.isAdmin) {
+        res.send('对不起，您不是管理员');
+        return;
+    }
+    next();
+})
 
 router.get('/', (req, res) => {
     res.render('admin/index', {
