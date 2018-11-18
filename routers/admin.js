@@ -8,9 +8,7 @@ const path = require('path');
 const fs = require('fs');
 
 router.use((req, res, next) => {
-    req.userInfo = { id: '5bdd0ad6d8cc5a1f50a3be43',
-    username: 'admin',
-    isAdmin: true };
+    
     if(!req.userInfo.isAdmin) {
         res.send('对不起，您不是管理员');
         return;
