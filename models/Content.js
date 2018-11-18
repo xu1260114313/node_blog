@@ -9,10 +9,23 @@ const contentSchema = new Schema({
         //引用
         ref: 'Category'
     },
-    //分类标题
+    //内容标题
     title: {
         type: String,
         required: true
+    },
+    image: {
+        type: String
+    },
+    //关联用户
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    //阅读量
+    views: {
+        type: Number,
+        default: 0
     },
     //简介
     description: {
@@ -28,6 +41,11 @@ const contentSchema = new Schema({
     createDate: {
         type: Date,
         default: Date.now
+    },
+    //评论
+    comments: {
+        type: Array,
+        default: []
     }
 })
 

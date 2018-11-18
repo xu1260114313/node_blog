@@ -1,7 +1,6 @@
 /* LESS Document */
 body {
   margin: 0px;
-  background: #ebebeb;
   font-family: '微软雅黑';
   font-size: 14px;
 }
@@ -159,7 +158,6 @@ nav {
   height: 56px;
   border-top: 1px solid #ebebeb;
   border-bottom: 2px solid #e1e1e1;
-  background: #fff;
 }
 nav .menu {
   text-align: center;
@@ -176,7 +174,6 @@ nav .menu a:hover, nav .menu a.focus {
   border-bottom: 2px solid #e67e22;
 }
 main {
-  width: 1140px;
   margin: 35px auto 0px;
 }
 main .mainLeft {
@@ -259,7 +256,6 @@ main .mainLeft .messageBox p {
   margin: 0px;
 }
 main .mainRight {
-  width: 360px;
   float: right;
 }
 main .mainRight .rightBox {
@@ -409,4 +405,11 @@ footer .fotBox span {
   line-height: 79px;
   border-top: 1px solid #303030;
   color: #555;
+}
+
+
+@media(max-width: 992px) {
+  main .mainRight {
+    display: none;
+  }
 }

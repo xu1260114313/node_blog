@@ -1,0 +1,25 @@
+<header class="ui stackable menu inverted">
+  <div class="ui container">
+    <div class="item" href="/">
+      <a href="/">徐文博的个人博客</a>
+    </div>
+    <div class="right menu">
+      <a class="sidebar item">
+        <i class="sidebar icon"></i>
+      </a>
+      <div class="item pc-hidden">
+        <div class="ui icon input">
+          <input type="text" placeholder="Search...">
+          <i class="search icon"></i>
+        </div>
+      </div>
+      <% if( userInfo.id && userInfo.username ){ %>
+        <a class="item pc-hidden"><%= userInfo.username %></a>
+        <a class="item pc-hidden" href="/api/user/logout">退出登录</a>
+      <% }else { %>
+        <a class="item pc-hidden" id="register">注册</a>
+        <a class="item pc-hidden" id="login">登录</a>
+      <% } %>
+    </div>
+  </div>
+</header>

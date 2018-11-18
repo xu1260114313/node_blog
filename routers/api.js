@@ -1,6 +1,7 @@
 const expess = require('express');
 const router = expess.Router();
 const User = require('../models/User');
+const Content = require('../models/Content');
 
 router.use((req, res, next) => {
     responseData = {
@@ -9,6 +10,7 @@ router.use((req, res, next) => {
     };
     next();
 })
+
 
 //注册
 router.post('/user/register', (req, res, next) => {
@@ -29,23 +31,26 @@ router.post('/user/register', (req, res, next) => {
     if( repassword !== password ) {
         responseData.code = 3;
         responseData.message = '两次输入的密码不一致';
-        return res.json(responseData);
+        res.json(responseData);
+        return;
     }
     User.findOne({ username }).then( userInfo => {
         if( userInfo ) {
             responseData.code = 4;
             responseData.message = "用户名已经注册";
             res.json(responseData);
-            return;
-        }
+            return Promise.reject();
+        };
         var user = new User({
             username,
             password
-        })
+        });
         return user.save();
     }).then(newUserInfo => {
-        responseData.message = "注册成功";
-        res.json(responseData);
+        if(newUserInfo) {
+            responseData.message = "注册成功";
+            res.json(responseData);
+        }
     });
 })
 
@@ -99,9 +104,47 @@ router.get('/user/logout', (req, res) => {
             console.log(err);
             return;
         }
-        res.json(responseData);
+        res.redirect("/");
     })
 })
 
+/*
+* 获取指定文章的所有评论
+* */
+router.get('/comment', function(req, res) {
+    var contentId = req.query.contentid || '';
+
+    Content.findOne({
+        _id: contentId
+    }).then(function(content) {
+        responseData.data = content.comments;
+        res.json(responseData);
+    })
+});
+
+/*
+* 评论提交
+* */
+router.post('/comment/post', function(req, res) {
+    //内容的id
+    var contentId = req.body.contentid || '';
+    var postData = {
+        username: req.userInfo.username,
+        postTime: new Date(),
+        content: req.body.content
+    };
+
+    //查询当前这篇内容的信息
+    Content.findOne({
+        _id: contentId
+    }).then(function(content) {
+        content.comments.push(postData);
+        return content.save();
+    }).then(function(newContent) {
+        responseData.message = '评论成功';
+        responseData.data = newContent;
+        res.json(responseData);
+    });
+});
 
 module.exports = router;

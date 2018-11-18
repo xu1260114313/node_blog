@@ -72,9 +72,9 @@
                 <td><%= contents[i].id %></td>
                 <td title="创建时间：<%= contents[i].category.createDate.toLocaleString() %>"><%= contents[i].category.name %></td>
                 <td><%= contents[i].title %></td>
-                <td>< contents[i].user.username %></td>
-                <td>< contents[i].addTime %></td>
-                <td>< contents[i].views %></td>
+                <td><%= contents[i].user.username %></td>
+                <td><%= contents[i].createDate.toLocaleString() %></td>
+                <td><%= contents[i].views %></td>
                 <td>
                     <a href="/admin/content/edit?id=<%= contents[i].id %>">修改</a> |
                     <a href="/admin/content/delete?id=<%= contents[i].id %>">删除</a>

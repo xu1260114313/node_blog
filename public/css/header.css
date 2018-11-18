@@ -1,0 +1,15 @@
+header.ui.menu .sidebar.item{
+  display: none;
+}
+@media screen and (max-width: 767px) {
+  header.ui.menu .right .pc-hidden{
+    display: none;
+  }
+  header.ui.menu .sidebar.item{
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 57px !important;
+  }
+}

@@ -26,8 +26,13 @@ app.use(express.static(__dirname+"/public"));
 //设置模板引擎ejs
 app.set('view engine', 'ejs')
 
+//设置图片上传虚拟路径
+app.use("/upload", express.static(__dirname + "/upload"));
+
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+
+
 
 //解析session信息
 app.use((req, res, next) => {
@@ -62,6 +67,12 @@ mongoose.connect('mongodb://localhost:27017/blog', err => {
         return;
     }
     console.log('数据库连接成功！');
+})
+
+//处理错误
+app.use(function(err, req, res, next) {
+    console.error(err.status, err.message);
+    res.status(err.status).send(err.message);
 })
 
 app.listen(3000, err => {

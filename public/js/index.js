@@ -81,4 +81,9 @@ $(function() {
         });
     })
 
+    //分页
+    //获取总页数
+    var totalPage = parseInt($('#totalPage').val()) == 0 ? 1 : parseInt($('#totalPage').val());
+    var currentPage = parseInt($('#currentPage').val());
+    loadpage(totalPage, currentPage, 4);
 })

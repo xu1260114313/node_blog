@@ -3,8 +3,14 @@ const router = expess.Router();
 const User = require('../models/User');
 const Category = require('../models/Category');
 const Content = require('../models/Content');
+const formidable = require('formidable'); //图片上传
+const path = require('path');
+const fs = require('fs');
 
 router.use((req, res, next) => {
+    req.userInfo = { id: '5bdd0ad6d8cc5a1f50a3be43',
+    username: 'admin',
+    isAdmin: true };
     if(!req.userInfo.isAdmin) {
         res.send('对不起，您不是管理员');
         return;
@@ -100,6 +106,9 @@ router.get('/category/add', (req, res) => {
 
 //分类保存
 router.post('/category/add', (req, res) => {
+    
+
+
     const name = req.body.name || '';
     if(name === '') {
         res.render('admin/error', {
@@ -253,12 +262,14 @@ router.get('/content', (req, res) => {
                  .sort({_id: -1})
                  .limit(limit)
                  .skip(skip)
-                 .populate({
+                 .populate([{
                      path: 'category',
                      model: 'Category'
-                 })
+                 }, {
+                    path: 'user',
+                    model: 'User'
+                 }])
                  .then(contents => {
-                     console.log(contents)
                      res.render('admin/content_index', {
                          userInfo: req.userInfo,
                          contents,
@@ -286,44 +297,66 @@ router.get('/content/add', (req, res) => {
 
 //内容保存
 router.post('/content/add', (req, res) => {
-    // console.log(req.body)
-    //内容分类不能为空
-    if(req.body.category === '') {
-        res.render('admin/error', {
-            userInfo: req.userInfo,
-            message: '内容分类不能为空',
-            url: ''
-        })
-        return;
-    };
-    if(req.body.title === '') {
-        res.render('admin/error', {
-            userInfo: req.userInfo,
-            message: '内容标题不能为空',
-            url: ''
-        })
-        return;
-    };
+    var form = new formidable.IncomingForm();
+    form.uploadDir = "upload";
+    form.keepExtensions = true;
+    form.parse(req, function(err, fields, files) {
+        //内容分类不能为空
+        if(fields.category === '') {
+            res.render('admin/error', {
+                userInfo: req.userInfo,
+                message: '内容分类不能为空',
+                url: ''
+            })
+            return;
+        };
+        if(fields.title === '') {
+            res.render('admin/error', {
+                userInfo: req.userInfo,
+                message: '内容标题不能为空',
+                url: ''
+            })
+            return;
+        };
 
-    //保存数据到数据库
-    const { category, title, description, content } = req.body;
-    new Content({
-        category,
-        title, 
-        description, 
-        content
-    }).save().then(rs => {
-        res.render('admin/success', {
-            userInfo: req.userInfo,
-            message: '内容保存成功',
-            url: '/admin/content'
-        })
+        //保存数据到数据库
+        const { category, title, description, content } = fields
+        const file = files.upload;
+        let setOpts = null;
+        if(file.name === '') {
+            setOpts = {
+                category,
+                title,
+                user: req.userInfo.id, 
+                description,
+                content,
+                image: ''
+            };
+            fs.unlinkSync(path.join(__dirname, '..', file.path));
+        }else {
+            const image = "/" + file.path;
+            setOpts = {
+                category,
+                title,
+                user: req.userInfo.id, 
+                description, 
+                content,
+                image
+            };
+        }
+        new Content(setOpts).save().then(rs => {
+            res.render('admin/success', {
+                userInfo: req.userInfo,
+                message: '内容保存成功',
+                url: '/admin/content'
+            })
+        });
     });
+    
 })
 
 //内容修改页面
 router.get('/content/edit', (req, res) => {
-
     const id = req.query.id || '';
     let categories = [];
     Category.find({})
@@ -351,6 +384,82 @@ router.get('/content/edit', (req, res) => {
                 defaultCategory: content.category
             });
         })
+})
+
+//保存修改内容
+router.post('/content/edit', (req, res) => {
+    const id = req.query.id || '';
+    var form = new formidable.IncomingForm();
+    form.uploadDir = "upload";
+    form.keepExtensions = true;
+    form.parse(req, function(err, fields, files) {
+        //内容分类不能为空
+        if(fields.category === '') {
+            res.render('admin/error', {
+                userInfo: req.userInfo,
+                message: '内容分类不能为空',
+                url: ''
+            })
+            return;
+        };
+        if(fields.title === '') {
+            res.render('admin/error', {
+                userInfo: req.userInfo,
+                message: '内容标题不能为空',
+                url: ''
+            })
+            return;
+        };
+        const file = files.upload;
+        let setOpts;
+        const {category, title, oldPath, description, content} = fields;
+        if(file.name === '') {
+            setOpts = {
+                category, 
+                title, 
+                description, 
+                content
+            }
+            //清除临时上传文件
+            fs.unlinkSync(path.join(__dirname, '..', file.path));
+        }else {
+            const image = "/" + file.path;
+            setOpts = {
+                category, 
+                title, 
+                description, 
+                content,
+                image
+            };
+            //清除旧的图片
+            if(oldPath !== '') {
+                fs.unlinkSync(path.join(__dirname, '..', oldPath));
+            }
+        }
+        Content.update({
+            _id: id
+        }, {$set: setOpts}).then(() => {
+            res.render('admin/success', {
+                userInfo: req.userInfo,
+                message: '内容保存成功',
+                url: '/admin/content'
+            })
+        });
+    })
     
+})
+
+//内容删除
+router.get('/content/delete', (req, res) => {
+    const id = req.query.id || '';
+    Content.remove({
+        _id: id
+    }).then(() => {
+        res.render('admin/success', {
+            userInfo: req.userInfo,
+            message: '删除成功',
+            url: '/admin/content'
+        })
+    })
 })
 module.exports = router;

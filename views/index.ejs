@@ -2,127 +2,194 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>博客</title>
-    <link href="/css/main.css" rel="stylesheet" type="text/css">
-    <link href="/fontAwesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="/css/semantic.css" rel="stylesheet" type="text/css">
+    <link href="/css/header.css" rel="stylesheet" type="text/css"/>
     <script src="/js/jquery-1.12.4.min.js"></script>
-    <script src="/js/index.js"></script>
+    <script src="/js/semantic.js"></script> 
+    <script src="/js/header.js"></script>
+    <style>
+      .categories {
+        display: block;
+      }
+      .mobile-categories{
+        display: none;
+      }
+      span.teal {
+        color: #00B5AD;
+      }
+      @media screen and (max-width: 767px) {
+        .categories {
+          display: none;
+        }
+        .mobile-categories {
+          display: block;
+        }
+      }
+    </style>
 </head>
 
 <body>
 
-<header>
-    <div class="backimg"><img src="/images/IMG_0293.JPG"></div>
-    <div class="logo"><span></span><img src="/images/00002637.png"></div>
-</header>
-
-<nav>
-    <div class="menu">
-        
-        <a href="/" class="focus">首页</a>
-        
-        <% for(var i = 0, len = categories.length; i < len; i++) {%>
-            <a href="/"><%= categories[i].name %></a>
+<%- include header.ejs %>
+<div class="ui container">
+  <!-- 选择分类 -->
+  <div class="categories">
+    <div class="ui pointing menu">
+      <%for(var i = 0, len = categories.length; i < len; i++){%>
+        <% if(categories[i].name === category) {%>
+          <a class="item active" href="<%= categories[i].name === '全部' ? '/' : '/category/' + categories[i].name %>">
+            <%= categories[i].name %>
+            <div class="ui label"><%= categories[i].count %></div>
+          </a>
+        <% }else { %>
+          <a class="item" href="<%= categories[i].name === '全部' ? '/' : '/category/' + categories[i].name %>">
+            <%= categories[i].name %>
+            <div class="ui label"><%= categories[i].count %></div>
+          </a>
         <% } %>
+      <% } %>
     </div>
-</nav>
+  </div>
 
-
-
-<main class="clear">
-    <div class="mainLeft">
-         <div class="listBox">
-            <h1>h1标签</h1>
-            <p class="colDefault">
-                作者：<span class="colInfo"></span> -
-                时间：<span class="colInfo"></span> -
-                阅读：<span class="colInfo"></span> -
-                评论：<span class="colInfo"></span>
-            </p>
-            <dfn><p></p></dfn>
-            <div class="function"><a href="/view?contentid={{content.id}}">阅读全文</a></div>
-        </div>
-
-        <div class="pager">
-            <ul class="clear">
-
-                <li class="previous">
-
-                    
-                    <span>没有上一页了</span>
-                    
-                    <!--
-                    <a href="">上一页</a>
-                    -->
-
-                </li>
-
-                
-                <li>
-                    <strong></strong>
-                </li>
-                
-
-                <li class="next">
-
-                    
-                    <span>没有下一页了</span>
-                    
-                    <!--
-                    <a href="">下一页</a>
-                    -->
-
-                </li>
-
-            </ul>
-        </div>
-    </div>
-
-    <div class="mainRight">
-        <% if( userInfo.id && userInfo.username ){ %>
-        <div class="rightBox" id="userInfo">
-            <div class="title"><span>用户信息</span></div>
-            <p><span class="colDark"><%= userInfo.username %></span></p>
-            <% if(userInfo.isAdmin){ %>
-                <p>
-                    <span class="colDanger">你好，管理员！</span>
-                    <a href="/admin">进入管理</a>
-                </p>
-            <% }else{ %>
-                <p><span class="colDanger">你好，欢迎光临我的博客！</span></p>
-            <% } %>
-            <p><span class="colDark"><a href="javascript:;" id="logout">退出</a></span></p>
-        </div>
-        <% }else{ %>
-        <div class="rightBox" id="loginBox">
-            <div class="title"><span>登录</span></div>
-            <div class="line"><span class="colDark">用户名：</span><input name="username" type="text" /><em></em></div>
-            <div class="line"><span class="colDark">密码：</span><input name="password" type="password" /><em></em></div>
-            <div class="line"><span class="colDark"></span><button>登 录</button></div>
-            <p class="textRight">还没注册？<a href="javascript:;" class="colMint">马上注册</a>　</p>
-            <p class="colWarning textCenter"></p>
-        </div>
-
-        <div class="rightBox" id="registerBox" style="display: none;">
-            <div class="title"><span>注册</span></div>
-            <div class="line"><span class="colDark">用户名：</span><input name="username" type="text" /></div>
-            <div class="line"><span class="colDark">密码：</span><input name="password" type="password" /></div>
-            <div class="line"><span class="colDark">确认：</span><input name="repassword" type="password" /></div>
-            <div class="line"><span class="colDark"></span><button>注 册</button></div>
-            <p class="textRight">已有账号？<a href="javascript:;" class="colMint">马上登录</a>　</p>
-            <p class="colWarning textCenter"></p>
-        </div>
+  <div class="mobile-categories">
+    <div class="ui floating labeled icon dropdown button">
+      <i class="filter icon"></i>
+      <% if(category === '') { %>
+        <span class="text" style="min-width: 60px;">全部</span>
+      <% }else { %>
+        <span class="text" style="min-width: 60px;"><%= category %></span>
+      <% } %>
+      <div class="menu" data-filtered="filtered">
+        <div class="header" data-filtered="filtered">选择分类</div>
+        <div class="divider" data-filtered="filtered"></div>
+        <% for(var i = 0, len = categories.length; i < len; i++) { %>
+          <a class="item" data-filtered="filtered" href="<%= categories[i].name === '全部' ? '/' : '/category/' + categories[i].name %>">
+            <span class="description"><%= categories[i].count%></span>
+            <span class="text"><%= categories[i].name %></span>
+          </a>
         <% } %>
-        <div class="rightBox" style="display: none;">
-            <div class="title"><span>社区</span></div>
-            <p><a href="http://www.miaov.com" target="_blank" class="colDanger">妙味课堂</a></p>
-            <p><a href="http://bbs.miaov.com" target="_blank" class="colDanger">妙味茶馆</a></p>
-        </div>
+      </div>
     </div>
+  </div>
+  
+  <div class="ui segment">
+    <div class="ui divided items">
+      <% for(var i = 0, len = contents.length; i< len; i++){ %>
+        <div class="item">
+          <div class="image">
+            <img src="<%= contents[i].image %>">
+          </div>
+          <div class="content">
+            <a class="header"><%= contents[i].title %></a>
+            <div class="meta">
+              <span class="cinema">作者：<%= contents[i].user.username %></span>
+              <span class="cinema">阅读量：<%= contents[i].views %></span>
+              <span class="cinema">创建时间：<%= contents[i].createDate.toLocaleString() %></span>
+            </div>
+            <div class="description">
+              <p><%= contents[i].description %></p>
+            </div>
+            <div class="extra">
+              <a class="ui right floated primary button" href="/view?contentid=<%= contents[i].id %>">查看更多 <i class="right chevron icon"></i> </a>
+              <div class="ui label"><%= contents[i].category.name %></div>
+            </div>
+          </div>
+        </div>
+      <% } %> 
+    </div>
+    <!--提示信息-->
+    <% if(contents.length === 0) { %>
+      <div class="ui ignored info message text-center">暂时没有数据</div>
+    <% }else if(flag){ %>
+      <div class="ui ignored info message text-center">已经到底部了</div>
+    <% } %>
+  </div>
 
+  <!--分页-->
+  
+  <div class="ui borderless menu mobile paging">
+    <a class="left menu item <%= page == 1 ? 'disabled' : '' %>" href="<%= '/category' + (category === '' ? '/all' : '/' + category) +'/page/' + Math.max(Number(page + -1), 1) %>">
+      <i class="arrow left icon"></i>
+    </a>
+    <a class="disabled item">
+      <span class="teal"><%= page %></span>/<%= pages %>
+    </a>
+    <a class="right menu item <%= flag ? 'disabled' : '' %>" href="<%= (category === '' ? '/category/all' : '/category/' + category) +'/page/' + Math.min(Number(page + 1), pages) %>">
+      <i class="arrow right icon"></i>
+    </a>
+  </div>
+</div>
 
-</main>
+<%- include login.ejs %>
+<%- include register.ejs %>
+    <script>
+      $('#login').on('click', function() {
+        $('.ui.modal.login')
+        .modal('show');
+      });
+      $('#register').on('click', function() {
+        $('.ui.modal.register')
+        .modal('show');
+      });
+      
+      //移动端分类选择
+      $('.ui.dropdown').on('click', function() {
+        var $menu = $(this).find('.menu');
+        $menu.toggle();
+      });
 
-<div class="copyright textCenter">Copyright © miaov.com 版权所有 | 京ICP备08102442号</div>
+      //注册
+      $('.form.register').find('[type=submit]').click(function(e) {
+        e.preventDefault();
+        var $form = $('.form.register');
+        $.ajax({
+            type: 'post',
+            url: '/api/user/register',
+            data: {
+                username: $form.find('[name="username"]').val(),
+                password: $form.find('[name="password"]').val(),
+                repassword: $form.find('[name="repassword"]').val()
+            },
+            dataType: 'json',
+            success: function(result) {
+                $form.find('.error').show().html(result.message);
+                setTimeout(function() {
+                  $form.find('.error').hide().html('');
+                }, 2000);
+                if (!result.code) {
+                    //登录成功
+                    window.location.reload();
+                }
+            }
+        })
+      })
+      //登陆
+      $('.form.login').find('[type=submit]').click(function(e) {
+        e.preventDefault();
+        var $form = $('.form.login');
+        console.log($form)
+        $.ajax({
+            type: 'post',
+            url: '/api/user/login',
+            data: {
+                username: $form.find('[name="username"]').val(),
+                password: $form.find('[name="password"]').val()
+            },
+            dataType: 'json',
+            success: function(result) {
+                $form.find('.error').show().html(result.message);
+                setTimeout(function() {
+                  $form.find('.error').hide().html('');
+                }, 2000);
+                if (!result.code) {
+                    //登录成功
+                    window.location.reload();
+                }
+            }
+        })
+      })
+    </script>
 </body>
 </html>
