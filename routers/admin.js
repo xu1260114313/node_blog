@@ -3,12 +3,14 @@ const router = expess.Router();
 const User = require('../models/User');
 const Category = require('../models/Category');
 const Content = require('../models/Content');
-const formidable = require('formidable'); //图片上传
+const multiparty = require('multiparty'); //图片上传
 const path = require('path');
 const fs = require('fs');
 
 router.use((req, res, next) => {
-    
+    req.userInfo = { id: '5bdd0ad6d8cc5a1f50a3be43',
+    username: 'admin',
+    isAdmin: true };
     if(!req.userInfo.isAdmin) {
         res.send('对不起，您不是管理员');
         return;
@@ -104,8 +106,6 @@ router.get('/category/add', (req, res) => {
 
 //分类保存
 router.post('/category/add', (req, res) => {
-    
-
 
     const name = req.body.name || '';
     if(name === '') {
@@ -295,62 +295,69 @@ router.get('/content/add', (req, res) => {
 
 //内容保存
 router.post('/content/add', (req, res) => {
-    var form = new formidable.IncomingForm();
-    form.uploadDir = "upload";
-    form.keepExtensions = true;
-    form.parse(req, function(err, fields, files) {
-        //内容分类不能为空
-        if(fields.category === '') {
-            res.render('admin/error', {
-                userInfo: req.userInfo,
-                message: '内容分类不能为空',
-                url: ''
-            })
-            return;
-        };
-        if(fields.title === '') {
-            res.render('admin/error', {
-                userInfo: req.userInfo,
-                message: '内容标题不能为空',
-                url: ''
-            })
-            return;
-        };
+    try {
+        fs.mkdirSync('./upload');
+        throw new Error('添加错误');
+    } catch (e) {
+        var form = new multiparty.Form();
+        form.uploadDir = "upload";
+        form.parse(req, function(err, fields, files) {
+            //内容分类不能为空
+            if(fields.category === '') {
+                res.render('admin/error', {
+                    userInfo: req.userInfo,
+                    message: '内容分类不能为空',
+                    url: ''
+                })
+                return;
+            };
+            if(fields.title === '') {
+                res.render('admin/error', {
+                    userInfo: req.userInfo,
+                    message: '内容标题不能为空',
+                    url: ''
+                })
+                return;
+            };
 
-        //保存数据到数据库
-        const { category, title, description, content } = fields
-        const file = files.upload;
-        let setOpts = null;
-        if(file.name === '') {
-            setOpts = {
-                category,
-                title,
-                user: req.userInfo.id, 
-                description,
-                content,
-                image: ''
-            };
-            fs.unlinkSync(path.join(__dirname, '..', file.path));
-        }else {
-            const image = "/" + file.path;
-            setOpts = {
-                category,
-                title,
-                user: req.userInfo.id, 
-                description, 
-                content,
-                image
-            };
-        }
-        new Content(setOpts).save().then(rs => {
-            res.render('admin/success', {
-                userInfo: req.userInfo,
-                message: '内容保存成功',
-                url: '/admin/content'
-            })
+            //保存数据到数据库
+            const { category, title, description, content } = fields
+            const uploadImg = files.upload[0];
+            const textTemp = files.files[0];
+            let setOpts = null;
+            if(uploadImg.originalFilename === '') {
+                setOpts = {
+                    category,
+                    title,
+                    user: req.userInfo.id, 
+                    description,
+                    content,
+                    image: ''
+                };
+                //删除图片上传缓存
+                fs.unlinkSync(path.join(__dirname, '..', uploadImg.path));
+            }else {
+                const image = "/" + uploadImg.path;
+                setOpts = {
+                    category,
+                    title,
+                    user: req.userInfo.id, 
+                    description, 
+                    content,
+                    image
+                };
+            }
+            //删除markdown图片上传缓存
+            fs.unlinkSync(path.join(__dirname, '..', textTemp.path));
+            new Content(setOpts).save().then(rs => {
+                res.render('admin/success', {
+                    userInfo: req.userInfo,
+                    message: '内容保存成功',
+                    url: '/admin/content'
+                })
+            });
         });
-    });
-    
+    }
 })
 
 //内容修改页面
@@ -387,9 +394,8 @@ router.get('/content/edit', (req, res) => {
 //保存修改内容
 router.post('/content/edit', (req, res) => {
     const id = req.query.id || '';
-    var form = new formidable.IncomingForm();
+    var form = new multiparty.Form();
     form.uploadDir = "upload";
-    form.keepExtensions = true;
     form.parse(req, function(err, fields, files) {
         //内容分类不能为空
         if(fields.category === '') {
@@ -408,10 +414,11 @@ router.post('/content/edit', (req, res) => {
             })
             return;
         };
-        const file = files.upload;
+        const file = files.upload[0];
+        const textTemp = files.files[0];
         let setOpts;
         const {category, title, oldPath, description, content} = fields;
-        if(file.name === '') {
+        if(file.originalFilename === '') {
             setOpts = {
                 category, 
                 title, 
@@ -431,9 +438,11 @@ router.post('/content/edit', (req, res) => {
             };
             //清除旧的图片
             if(oldPath !== '') {
-                fs.unlinkSync(path.join(__dirname, '..', oldPath));
+                fs.unlinkSync(path.join(__dirname, '..', oldPath[0]));
             }
         }
+        //清除markdown临时上传文件
+        fs.unlinkSync(path.join(__dirname, '..', textTemp.path));
         Content.update({
             _id: id
         }, {$set: setOpts}).then(() => {

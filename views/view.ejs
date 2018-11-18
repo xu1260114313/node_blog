@@ -16,6 +16,19 @@
         .ui.container img {
             width: 100% !important;
         }
+        pre {
+            display: block;
+            padding: 9.5px;
+            margin: 0 0 10px;
+            font-size: 13px;
+            line-height: 1.42857143;
+            color: #333;
+            word-break: break-all;
+            word-wrap: break-word;
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
     </style>
 </head>
 
@@ -23,7 +36,7 @@
 
 <%- include header.ejs %>
 
-<div class="ui container">
+<div class="ui container" id="container">
     <div class="listBox">
         <h1><%= content.title %></h1>
         <p class="colDefault">

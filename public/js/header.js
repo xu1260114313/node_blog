@@ -1,15 +1,9 @@
 $(function() {
-    $(window).on('scroll', function() {
-        var scrollTop = $(document).scrollTop();
-        var $header = $('header');
-        if(scrollTop >= 47) {
-            $header.addClass('fixed');
-        }else {
-            if($header.hasClass('fixed')) {
-                $header.removeClass('fixed');
-            }
-        };
-    });
+    //头部吸顶条
+    $('.ui.sticky').sticky({
+        context: '#container'
+    })
+    ;
     $('.sidebar.item').on('click', function () {
         console.log(1)
         var $el = $('.ui.menu .pc-hidden');
